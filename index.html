@@ -1,60 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My AI Chatbot</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Gemini 2.5 Chatbot</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
-        .box { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        #chat { height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
-        input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .u { align-self: flex-end; background: #007bff; color: white; padding: 8px; border-radius: 10px; }
-        .a { align-self: flex-start; background: #eee; padding: 8px; border-radius: 10px; }
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+        .chat-container { width: 100%; max-width: 400px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        #chat-box { height: 350px; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #fafafa; }
+        .controls { padding: 15px; border-top: 1px solid #eee; display: flex; flex-direction: column; gap: 8px; }
+        input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
+        button { background: #0078ff; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .user-msg { align-self: flex-end; background: #0078ff; color: white; padding: 8px 12px; border-radius: 15px 15px 0 15px; font-size: 14px; }
+        .ai-msg { align-self: flex-start; background: #e9e9eb; color: #333; padding: 8px 12px; border-radius: 15px 15px 15px 0; font-size: 14px; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h3>Gemini 2.5 Chat</h3>
-    <input type="password" id="key" placeholder="Paste AIzaSy... key here">
-    <div id="chat"></div>
-    <input type="text" id="input" placeholder="Ask me anything...">
-    <button onclick="run()">Send</button>
+<div class="chat-container">
+    <div id="chat-box">
+        <div class="ai-msg">Hello! Paste your <b>AIza...</b> key below to start.</div>
+    </div>
+    <div class="controls">
+        <input type="password" id="api-key" placeholder="Paste AIzaSy... key here">
+        <div style="display:flex; gap:5px;">
+            <input type="text" id="user-input" style="flex:1" placeholder="Ask something...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
 </div>
 
 <script type="module">
-    // Using the absolute newest 2026 stable library
     import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-    window.run = async function() {
-        const key = document.getElementById('key').value.trim();
-        const msg = document.getElementById('input').value.trim();
-        const chat = document.getElementById('chat');
+    window.sendMessage = async function() {
+        const keyField = document.getElementById('api-key');
+        const inputField = document.getElementById('user-input');
+        const chatBox = document.getElementById('chat-box');
 
-        if (!key || !msg) return alert("Enter Key & Message!");
+        const API_KEY = keyField.value.trim();
+        const prompt = inputField.value.trim();
 
-        chat.innerHTML += `<div class="u">${msg}</div>`;
-        document.getElementById('input').value = "";
+        if (!API_KEY) return alert("Please paste your API Key first!");
+        if (!prompt) return;
+
+        // Show User Message
+        chatBox.innerHTML += `<div class="user-msg">${prompt}</div>`;
+        inputField.value = "";
+        chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
-            // STEP 1: Connect with Key
-            const genAI = new GoogleGenerativeAI(key);
+            // Initialize with user's key
+            const genAI = new GoogleGenerativeAI(API_KEY);
             
-            // STEP 2: Use THE ONLY STABLE 2026 model for free tier
+            // STABLE 2026 MODEL: gemini-2.5-flash
             const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-            // STEP 3: Get Answer
-            const result = await model.generateContent(msg);
+            const result = await model.generateContent(prompt);
             const response = await result.response;
             
-            chat.innerHTML += `<div class="a">${response.text()}</div>`;
-        } catch (e) {
-            // IF THIS FAILS, IT WILL PRINT THE REAL REASON
-            chat.innerHTML += `<div style="color:red; font-size:12px">Error: ${e.message}</div>`;
-            console.error(e);
+            chatBox.innerHTML += `<div class="ai-msg">${response.text()}</div>`;
+        } catch (error) {
+            chatBox.innerHTML += `<div class="ai-msg" style="color:red"><b>Error:</b> ${error.message}</div>`;
+            console.error(error);
         }
-        chat.scrollTop = chat.scrollHeight;
+        chatBox.scrollTop = chatBox.scrollHeight;
     }
 </script>
 
