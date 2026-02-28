@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
 // 1. ADD YOUR KEY HERE (Inside the quotes)
-const API_KEY = "gen-lang-client-0061833200"; 
+const API_KEY = "AIzaSyBaDPRwKVR0dRY9DBKO5AhalkvqMLHhy7E"; 
 
 window.sendMessage = async function() {
     const prompt = document.getElementById('user-input').value;
