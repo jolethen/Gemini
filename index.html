@@ -3,72 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevAI | 2.5 Stable Edition</title>
+    <title>DevAI | Safe 2.5 Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
     <style>
         :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --primary: #238636; --border: #30363d; --code-bg: #000; }
         [data-theme="light"] { --bg: #ffffff; --card: #f6f8fa; --text: #24292f; --primary: #0969da; --border: #d0d7de; --code-bg: #f1f1f1; }
 
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
-        .container { width: 100%; max-width: 900px; display: flex; flex-direction: column; background: var(--card); border-right: 1px solid var(--border); border-left: 1px solid var(--border); }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; height: 100vh; transition: 0.3s; }
+        .container { width: 100%; max-width: 850px; display: flex; flex-direction: column; background: var(--card); border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
         .header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         
-        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
-        
-        /* Markdown & Bubble Styling */
-        .msg { max-width: 85%; padding: 12px 18px; border-radius: 12px; font-size: 15px; line-height: 1.6; word-wrap: break-word; }
+        /* Progress Bar Styling */
+        #progress-container { width: 100%; height: 4px; background: transparent; }
+        #progress-bar { width: 0%; height: 100%; background: var(--primary); transition: width 0.3s ease; }
+
+        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .msg { max-width: 85%; padding: 12px 18px; border-radius: 12px; font-size: 14.5px; line-height: 1.6; word-wrap: break-word; }
         .ai-msg { align-self: flex-start; background: var(--bg); border: 1px solid var(--border); }
-        .user-msg { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
+        .user-msg { align-self: flex-end; background: var(--primary); color: white; }
         
-        /* Code Block Styling */
         .code-container { position: relative; margin: 15px 0; }
         pre { background: var(--code-bg); padding: 15px; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); margin: 0; }
-        code { font-family: 'Consolas', 'Monaco', monospace; color: #79c0ff; font-size: 13px; }
+        code { font-family: 'Consolas', monospace; color: #79c0ff; font-size: 13px; }
         .copy-btn { position: absolute; top: 8px; right: 8px; padding: 4px 8px; font-size: 11px; background: #30363d; color: white; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
 
         .input-area { padding: 20px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
-        .row { display: flex; gap: 10px; }
         input { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 6px; outline: none; }
-        button#send-btn { background: var(--primary); color: white; border: none; padding: 10px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        
-        /* Markdown spacing fixes */
-        .ai-msg p { margin: 8px 0; }
-        .ai-msg ul, .ai-msg ol { margin: 8px 0; padding-left: 20px; }
+        .row { display: flex; gap: 10px; }
+        button#send-btn { background: var(--primary); color: white; border: none; padding: 10px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button#send-btn:disabled { background: #444; cursor: not-allowed; opacity: 0.6; }
+        #cooldown-text { font-size: 12px; color: #8b949e; text-align: center; display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <strong>DevAI Engineer (v2.5 Stable)</strong>
-        <button onclick="toggleTheme()" style="background:none; border:1px solid var(--border); color:var(--text); cursor:pointer; padding:5px 10px; border-radius:4px;">🌓 Theme</button>
+        <strong>DevAI | Gemini 2.5 Flash</strong>
+        <button onclick="toggleTheme()" style="background:none; border:1px solid var(--border); color:var(--text); cursor:pointer; padding:5px 10px; border-radius:4px;">🌓</button>
     </div>
+    
+    <div id="progress-container"><div id="progress-bar"></div></div>
 
     <div id="chat-box">
-        <div class="msg ai-msg"><b>System:</b> Connected to Gemini 2.5 Flash. Key is active and saved locally. Ready to build.</div>
+        <div class="msg ai-msg"><b>System:</b> Secure Mode Active. 5s cooldown enabled. Type below.</div>
     </div>
 
     <div class="input-area">
         <input type="password" id="api-key" placeholder="Paste API Key (AIzaSy...)">
         <div class="row">
-            <input type="text" id="user-input" style="flex:1" placeholder="Describe the code you need...">
+            <input type="text" id="user-input" style="flex:1" placeholder="Describe the code you want...">
             <button id="send-btn" onclick="sendMessage()">Send</button>
         </div>
+        <div id="cooldown-text">Wait <span id="timer">5</span>s for next request...</div>
     </div>
 </div>
 
 <script type="module">
     import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-    // Setup Markdown Converter
-    const converter = new showdown.Converter({
-        tables: true,
-        strikethrough: true,
-        simpleLineBreaks: true,
-        ghCodeBlocks: true
-    });
-
+    const converter = new showdown.Converter({ tables: true, strikethrough: true, simpleLineBreaks: true, ghCodeBlocks: true });
     let chatSession = null;
+    let isWaiting = false;
 
     window.onload = () => {
         const savedKey = localStorage.getItem('gemini_key');
@@ -91,53 +87,105 @@
         setTimeout(() => btn.innerText = "Copy", 2000);
     };
 
-    window.sendMessage = async function() {
-        const keyInput = document.getElementById('api-key');
-        const userInput = document.getElementById('user-input');
-        const chatBox = document.getElementById('chat-box');
+    // Smooth Typewriter Effect
+    async function typeWriter(text, element) {
+        const html = converter.makeHtml(text);
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        const fullText = tempDiv.innerHTML;
+        
+        let i = 0;
+        let speed = 5; // Adjust speed here
+        
+        return new Promise(resolve => {
+            function type() {
+                if (i < fullText.length) {
+                    element.innerHTML = fullText.substring(0, i + 1);
+                    i++;
+                    setTimeout(type, speed);
+                    document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+                } else {
+                    // Re-apply copy buttons after typing
+                    element.innerHTML = element.innerHTML.replace(/<pre><code([\s\S]*?)<\/code><\/pre>/g, (match) => {
+                        return `<div class="code-container"><button class="copy-btn" onclick="copyCode(this)">Copy</button>${match}</div>`;
+                    });
+                    resolve();
+                }
+            }
+            type();
+        });
+    }
 
-        const key = keyInput.value.trim();
-        const prompt = userInput.value.trim();
+    window.sendMessage = async function() {
+        if (isWaiting) return;
+
+        const key = document.getElementById('api-key').value.trim();
+        const input = document.getElementById('user-input');
+        const prompt = input.value.trim();
+        const chatBox = document.getElementById('chat-box');
+        const sendBtn = document.getElementById('send-btn');
+        const progressBar = document.getElementById('progress-bar');
 
         if (!key || !prompt) return;
-
         localStorage.setItem('gemini_key', key);
+
         chatBox.innerHTML += `<div class="msg user-msg">${prompt}</div>`;
-        userInput.value = "";
-        chatBox.scrollTop = chatBox.scrollHeight;
+        input.value = "";
+        
+        // Disable button & Start Progress
+        isWaiting = true;
+        sendBtn.disabled = true;
+        progressBar.style.width = "40%";
 
         try {
             const genAI = new GoogleGenerativeAI(key);
-            
-            // STRICTLY USING THE STABLE 2.5 MODEL
             const model = genAI.getGenerativeModel({ 
                 model: "gemini-2.5-flash",
-                systemInstruction: "You are a Senior AI Engineer. Provide clean code. Use Markdown. Always wrap code in triple backticks."
+                systemInstruction: "You are a Senior AI Engineer. Provide clean code. Use Markdown."
             });
 
-            if (!chatSession) {
-                chatSession = model.startChat({ history: [] });
-            }
+            if (!chatSession) chatSession = model.startChat({ history: [] });
 
             const result = await chatSession.sendMessage(prompt);
             const response = await result.response;
-            let text = response.text();
+            const text = response.text();
 
-            // Convert Markdown to HTML
-            let htmlContent = converter.makeHtml(text);
+            progressBar.style.width = "100%";
+            
+            const aiMsgDiv = document.createElement('div');
+            aiMsgDiv.className = 'msg ai-msg';
+            chatBox.appendChild(aiMsgDiv);
 
-            // Add Copy Buttons to generated code blocks
-            htmlContent = htmlContent.replace(/<pre><code([\s\S]*?)<\/code><\/pre>/g, (match) => {
-                return `<div class="code-container"><button class="copy-btn" onclick="copyCode(this)">Copy</button>${match}</div>`;
-            });
+            await typeWriter(text, aiMsgDiv);
 
-            chatBox.innerHTML += `<div class="msg ai-msg">${htmlContent}</div>`;
         } catch (e) {
             chatBox.innerHTML += `<div class="msg ai-msg" style="color:#ff7b72"><b>Error:</b> ${e.message}</div>`;
+        } finally {
+            progressBar.style.width = "0%";
+            startCooldown();
         }
-        chatBox.scrollTop = chatBox.scrollHeight;
     };
-</script>
 
+    function startCooldown() {
+        const cooldownText = document.getElementById('cooldown-text');
+        const timerSpan = document.getElementById('timer');
+        const sendBtn = document.getElementById('send-btn');
+        let timeLeft = 5;
+
+        cooldownText.style.display = 'block';
+        
+        const countdown = setInterval(() => {
+            timeLeft--;
+            timerSpan.innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                isWaiting = false;
+                sendBtn.disabled = false;
+                cooldownText.style.display = 'none';
+                timerSpan.innerText = 5;
+            }
+        }, 1000);
+    }
+</script>
 </body>
 </html>
