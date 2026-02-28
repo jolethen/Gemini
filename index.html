@@ -1,53 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Gemini 2026 Bot</title>
+    <title>My AI Chatbot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f0f2f5; }
-        #chat { height: 300px; overflow-y: auto; background: white; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 8px; }
-        input { width: 100%; padding: 10px; margin-bottom: 5px; box-sizing: border-box; border-radius: 5px; border: 1px solid #ddd; }
-        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
+        .box { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        #chat { height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
+        input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .u { align-self: flex-end; background: #007bff; color: white; padding: 8px; border-radius: 10px; }
+        .a { align-self: flex-start; background: #eee; padding: 8px; border-radius: 10px; }
     </style>
 </head>
 <body>
-    <h3>Gemini 2.5 Flash Bot</h3>
-    <input type="password" id="key" placeholder="Paste your AIzaSy... key here">
-    
+
+<div class="box">
+    <h3>Gemini 2.5 Chat</h3>
+    <input type="password" id="key" placeholder="Paste AIzaSy... key here">
     <div id="chat"></div>
-    
-    <input type="text" id="msg" placeholder="Type your message...">
-    <button onclick="ask()">Send to AI</button>
+    <input type="text" id="input" placeholder="Ask me anything...">
+    <button onclick="run()">Send</button>
+</div>
 
-    <script type="module">
-        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+<script type="module">
+    // Using the absolute newest 2026 stable library
+    import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-        window.ask = async function() {
-            const K = document.getElementById('key').value.trim();
-            const P = document.getElementById('msg').value;
-            const box = document.getElementById('chat');
+    window.run = async function() {
+        const key = document.getElementById('key').value.trim();
+        const msg = document.getElementById('input').value.trim();
+        const chat = document.getElementById('chat');
 
-            if(!K || !P) return alert("Enter KEY and MESSAGE!");
+        if (!key || !msg) return alert("Enter Key & Message!");
 
-            box.innerHTML += `<div><b>You:</b> ${P}</div>`;
-            document.getElementById('msg').value = "";
+        chat.innerHTML += `<div class="u">${msg}</div>`;
+        document.getElementById('input').value = "";
 
-            try {
-                // Initialize precisely
-                const genAI = new GoogleGenerativeAI(K);
-                // Use the 2026 stable model: gemini-2.5-flash
-                const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        try {
+            // STEP 1: Connect with Key
+            const genAI = new GoogleGenerativeAI(key);
+            
+            // STEP 2: Use THE ONLY STABLE 2026 model for free tier
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-                const result = await model.generateContent(P);
-                const response = await result.response;
-                
-                box.innerHTML += `<div style="color:blue"><b>AI:</b> ${response.text()}</div>`;
-            } catch (err) {
-                // This will tell us the EXACT reason for failure
-                box.innerHTML += `<div style="color:red"><b>ERROR:</b> ${err.message}</div>`;
-                console.error(err);
-            }
-            box.scrollTop = box.scrollHeight;
+            // STEP 3: Get Answer
+            const result = await model.generateContent(msg);
+            const response = await result.response;
+            
+            chat.innerHTML += `<div class="a">${response.text()}</div>`;
+        } catch (e) {
+            // IF THIS FAILS, IT WILL PRINT THE REAL REASON
+            chat.innerHTML += `<div style="color:red; font-size:12px">Error: ${e.message}</div>`;
+            console.error(e);
         }
-    </script>
+        chat.scrollTop = chat.scrollHeight;
+    }
+</script>
+
 </body>
 </html>
