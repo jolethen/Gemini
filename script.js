@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-// Replace with the NEW key you generate after deleting the old one!
+// ⚠️ DELETE YOUR OLD KEY AND PUT THE NEW ONE HERE
 const API_KEY = "AIzaSyBaDPRwKVR0dRY9DBKO5AhalkvqMLHhy7E"; 
 
 window.sendMessage = async function() {
@@ -10,27 +10,32 @@ window.sendMessage = async function() {
 
     if (!prompt) return;
 
-    // 1. Show User Message
-    chatBox.innerHTML += `<div style="margin-bottom:10px;"><b>You:</b> ${prompt}</div>`;
+    // 1. Add User Message to UI
+    chatBox.innerHTML += `<div style="background:#DCF8C6; padding:10px; margin:5px; border-radius:10px; align-self: flex-end; max-width: 80%;"><b>You:</b> ${prompt}</div>`;
     userInput.value = "";
+    chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
-        // 2. Initialize Gemini
+        // 2. Setup Gemini 2.0
         const genAI = new GoogleGenerativeAI(API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // Using the newer 2.0-flash model to avoid the 404 error
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-        // 3. Get Response
+        // 3. Fetch Response
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
         
-        // 4. Show AI Message
-        chatBox.innerHTML += `<div style="margin-bottom:10px; color: blue;"><b>AI:</b> ${text}</div>`;
+        // 4. Add AI Message to UI
+        chatBox.innerHTML += `<div style="background:#FFF; padding:10px; margin:5px; border-radius:10px; border: 1px solid #ddd; max-width: 80%;"><b>AI:</b> ${text}</div>`;
         chatBox.scrollTop = chatBox.scrollHeight;
 
     } catch (error) {
-        // This will tell us EXACTLY what Google says is wrong
-        chatBox.innerHTML += `<p style="color:red"><b>System Error:</b> ${error.message}</p>`;
-        console.error("Full Error Context:", error);
+        // Detailed error reporting
+        chatBox.innerHTML += `<div style="color:red; background:#FFDADA; padding:10px; margin:5px; border-radius:5px;">
+            <b>System Error:</b> ${error.message} <br>
+            <small>Tip: Check if your API key is active in AI Studio.</small>
+        </div>`;
+        console.error("Full Error Info:", error);
     }
 }
